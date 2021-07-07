@@ -20,10 +20,10 @@ public class Client {
 
     public class ThreadClient extends Thread {
 
-        Order order1;
+        Order order;
 
         void initOrder (String name, int amount, Order.Type type) {
-            order1 = new Order(name, amount, type);
+            order = new Order(name, amount, type);
         }
 
         public ThreadClient(String s) {
@@ -32,13 +32,11 @@ public class Client {
         @Override
         public void run() {
                 try {
-                    frontSystem.addOrder(order1);
-                    System.out.println(order1.getName() + ": Заявка " + order1 + "отправлена в банк");
+                    frontSystem.addOrder(order);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
         }
     }
-
 }

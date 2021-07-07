@@ -18,6 +18,7 @@ public class FrontSystem {
     public synchronized void addOrder(Order order) throws InterruptedException {
         //while(orders.isEmpty())
         orders.add(order);
+        System.out.println(order.getName() + ": Заявка " + order + "отправлена в банк");
         notify();
 
     }
