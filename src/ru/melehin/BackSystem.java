@@ -4,7 +4,7 @@ public class BackSystem {
 
     private volatile int deposit;
 
-    public int getAmount() {
+    public int getDeposit() {
         return deposit;
     }
 

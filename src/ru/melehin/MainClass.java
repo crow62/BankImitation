@@ -15,6 +15,7 @@ public class MainClass {
 
 
         Handler handler = new Handler(frontSystem, backSystem);
-        handler.handleOrder();
+        handler.handleOrder(1);
+        handler.handleOrder(2);
     }
 }
