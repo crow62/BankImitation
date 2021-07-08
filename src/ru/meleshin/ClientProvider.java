@@ -1,22 +1,18 @@
-package ru.melehin;
+package ru.meleshin;
 
-public class Client {
+public class ClientProvider {
 
-    FrontSystem frontSystem;
-    BackSystem backSystem;
+    private final FrontSystem frontSystem;
 
-    public Client(FrontSystem frontSystem, BackSystem backSystem) {
+    public ClientProvider(FrontSystem frontSystem) {
         this.frontSystem = frontSystem;
-        this.backSystem = backSystem;
     }
 
-    public void buildOrder(String name, int amount, Order.Type type) throws InterruptedException {
+    public void sendOrder(String name, int amount, Order.Type type)  {
         ThreadClient threadClient = new ThreadClient("thread"+ name);
         threadClient.initOrder(name,amount,type);
         threadClient.start();
-
     }
-
 
     public class ThreadClient extends Thread {
 
@@ -26,7 +22,8 @@ public class Client {
             order = new Order(name, amount, type);
         }
 
-        public ThreadClient(String s) {
+        public ThreadClient(String name) {
+            super(name);
         }
 
         @Override
@@ -36,7 +33,6 @@ public class Client {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
         }
     }
 }

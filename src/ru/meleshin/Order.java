@@ -1,11 +1,10 @@
-package ru.melehin;
+package ru.meleshin;
 
 public class Order {
 
     private String name;
     private int amount;
     private Type type;
-
 
     public enum Type {
         CREDIT,REPAYMENT
