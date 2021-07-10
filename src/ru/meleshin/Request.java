@@ -1,13 +1,20 @@
 package ru.meleshin;
 
-public class Order {
+public class Request {
 
     private String name;
     private int amount;
     private Type type;
 
+
     public enum Type {
         CREDIT,REPAYMENT
+    }
+
+    public Request(String name, int amount, Type type) {
+        this.name = name;
+        this.amount = amount;
+        this.type = type;
     }
 
     public String getName() {
@@ -35,15 +42,10 @@ public class Order {
     }
 
 
-    public Order(String name, int amount, Type type) {
-        this.name = name;
-        this.amount = amount;
-        this.type = type;
-    }
 
     @Override
     public String toString() {
-        return "Order{" +
+        return "Client {" +
                 "name='" + name + '\'' +
                 ", amount=" + amount +
                 ", type=" + type +

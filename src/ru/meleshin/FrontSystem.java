@@ -5,31 +5,35 @@ import java.util.Queue;
 
 public class FrontSystem {
 
-    private Queue<Order> orders = new LinkedList<>();
+    private Queue<Request> requests = new LinkedList<>();
 
-    public Queue<Order> getOrders() {
-        return orders;
+    public Queue<Request> getRequests() {
+        return requests;
     }
 
-    public synchronized void addOrder(Order order) throws InterruptedException {
-        System.out.println(order.getName() + ": Заявка " + order + "отправлена в банк");
-        while (getOrders().size()==2){
+    public synchronized void addRequest(Request request) throws InterruptedException {
+
+        while (getRequests().size() == 2) {
             wait();
         }
-        orders.add(order);
-        notify();
+        requests.add(request);
+        System.out.println(request.getName() + ": Заявка " + request + "отправлена в банк");
+
     }
 
-    public synchronized Order getOrder(int numberHandler) throws InterruptedException {
+    public synchronized Request getRequest() {
 
-        while(getOrders().isEmpty()) {
-            wait();
+        try {
+            Request request = requests.poll();
+            System.out.println(Thread.currentThread().getName() + ": получена заявка на обработку по клиенту - "
+                    + request.getName());
+            return request;
+        } catch (NullPointerException exception) {
+            return null;
+        } finally {
+            notifyAll();
         }
 
-        Order order = orders.poll();
-        notify();
-        System.out.println("Обработчик заявок № " + numberHandler +": получена заявка на обработку по клиенту - "
-                + order.getName());
-        return order;
+
     }
 }

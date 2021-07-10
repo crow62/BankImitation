@@ -1,32 +1,44 @@
 package ru.meleshin;
 
+import java.util.Locale;
+
 public class BackSystem {
 
-    private volatile int deposit;
+    private volatile int balance;
+    private volatile int counter;
 
-    public int getDeposit() {
-        return deposit;
+    public int getBalance() {
+        return balance;
     }
 
-    public synchronized void takeLoan(Order order, int credit) {
-        if (credit > getDeposit()) {
-            throw new RuntimeException("Бэк система: ЗАЯВКА " + order + "НЕ ВЫПОЛНЕНА ." +
-                    " Получена от обработчик заявок №2. Сумма больше баланса банка." +
-                    " Баланс банка - " + getDeposit());
+    public int getCounter() {
+        return counter;
+    }
+
+    public synchronized void takeLoan(Request request, int credit) {
+        counter++;
+        if (credit > getBalance()) {
+            throw new RuntimeException("Бэк система: ЗАЯВКА " + request + "НЕ ВЫПОЛНЕНА ." +
+                    " Получена от " + Thread.currentThread().getName().toLowerCase(Locale.ROOT) +
+                    ". Сумма больше баланса банка. Баланс банка - " + getBalance());
         } else {
-            deposit = deposit - credit;
-            printMessageSuccess(order);
+            balance = balance - credit;
+            printMessageSuccess(request);
         }
     }
 
-    public synchronized void repayLoan(Order order, int repayment) {
-        deposit = deposit + repayment;
-        printMessageSuccess(order);
+    public synchronized void repayLoan(Request request, int repayment) {
+        counter++;
+        balance = balance + repayment;
+        printMessageSuccess(request);
+
     }
 
-    private void printMessageSuccess(Order order) {
-            System.out.println("Бэк система: ЗАЯВКА " + order + "УСПЕШНО ВЫПОЛНЕНА ." +
-                    " Получена от обработчик заявок №2. Баланс банка - " + getDeposit());
+    private void printMessageSuccess(Request request) {
+
+        System.out.println("Бэк система: ЗАЯВКА " + request + "УСПЕШНО ВЫПОЛНЕНА ." +
+                " Получена от " + Thread.currentThread().getName().toLowerCase(Locale.ROOT) +
+                ". Баланс банка - " + getBalance());
 
     }
 
