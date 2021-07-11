@@ -1,5 +1,6 @@
 package ru.meleshin;
 
+
 public class Client implements Runnable {
 
     private final FrontSystem frontSystem;

@@ -1,39 +1,36 @@
 package ru.meleshin;
 
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 
 public class FrontSystem {
 
-    private Queue<Request> requests = new LinkedList<>();
+//    BlockingQueue из€щно решает проблему передачи собранных одним потоком элементов
+//    дл€ обработки в другой поток без €вных хлопот о проблемах синхронизации.
+//    ѕопытки вставить (put) элемент в полную очередь приведет к блокированию работы потока;
+//    попытка извлечь (take) элемент из пустой очереди также блокирует поток.
+
+    private BlockingQueue<Request> requests = new ArrayBlockingQueue<>(2,true);
+
 
     public Queue<Request> getRequests() {
         return requests;
     }
 
-    public synchronized void addRequest(Request request) throws InterruptedException {
-
-        while (getRequests().size() == 2) {
-            wait();
-        }
-        requests.add(request);
+    public void addRequest(Request request) throws InterruptedException {
         System.out.println(request.getName() + ": «а€вка " + request + "отправлена в банк");
+        requests.put(request);
 
     }
 
-    public synchronized Request getRequest() {
+    public Request getRequest() throws InterruptedException {
+        Request request = requests.take();
+        System.out.println(Thread.currentThread().getName() + ": получена за€вка на обработку по клиенту - "
+                + request.getName());
 
-        try {
-            Request request = requests.poll();
-            System.out.println(Thread.currentThread().getName() + ": получена за€вка на обработку по клиенту - "
-                    + request.getName());
-            return request;
-        } catch (NullPointerException exception) {
-            return null;
-        } finally {
-            notifyAll();
-        }
-
+        return request;
 
     }
 }

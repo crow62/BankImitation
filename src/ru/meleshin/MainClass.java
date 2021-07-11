@@ -1,45 +1,72 @@
 package ru.meleshin;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class MainClass {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
+
+        System.out.println("Ожидаем пополнение баланса банка...");
 
         FrontSystem frontSystem = new FrontSystem();
         BackSystem backSystem = new BackSystem();
 
-        Thread thread1 = new Thread(new Client(frontSystem,new Request("Клиент1", 5000, Request.Type.CREDIT)));
-        Thread thread2 = new Thread(new Client(frontSystem,new Request("Клиент2", 10000, Request.Type.REPAYMENT)));
-        Thread thread3 = new Thread(new Client(frontSystem,new Request("Клиент3", 20000, Request.Type.REPAYMENT)));
-        Thread thread4 = new Thread(new Client(frontSystem,new Request("Клиент4", 150000, Request.Type.CREDIT)));
-        Thread thread5 = new Thread(new Client(frontSystem,new Request("Клиент5", 15000, Request.Type.REPAYMENT)));
+        System.err.println("\nБАЛАНС БАНКА - " + backSystem.getBalance());
+        Scanner scanner = new Scanner(System.in);
 
 
-        List<Thread> threadsClient = Arrays.asList(thread1, thread2, thread3, thread4, thread5);
-        for (Thread thread: threadsClient) {
-            thread.start();
+        System.err.println("Введите количество клиентов: ");
+        int numberClients;
+        numberClients = scanner.nextInt();
+
+        System.err.println("Введите количество обработчиков: ");
+        int numberHandlers;
+        numberHandlers = scanner.nextInt();
+
+        Random random = new Random();
+
+        List<Thread> threadsClient = new ArrayList<>();
+        for (int i = 0; i < numberClients; i++) {
+            threadsClient.add(new Thread(new Client(frontSystem, new Request
+                    ("Клиент" + (i + 1), 5000 * (1 + random.nextInt(10)),
+                            Request.Type.values()[random.nextInt(2)]))));
         }
 
-        Thread.sleep(1000);
+        //создаем пул с именованнми потоками для клиентов
+        ExecutorService firstExecutorService = Executors.newFixedThreadPool(numberClients,
+                new NamingThreadsInPool("Поток клиента"));
 
-        Thread firstThreadHandler = new Thread(new Handler(frontSystem,backSystem),"Обработчик заявок №1" );
-        Thread secondThreadHandler = new Thread(new Handler(frontSystem,backSystem), "Обработчик заявок №2");
+        for (Thread thread : threadsClient) {
+            firstExecutorService.submit(thread);
+        }
+        firstExecutorService.shutdown();
 
-        List<Thread> threadsHandler = Arrays.asList(firstThreadHandler, secondThreadHandler);
-        for (Thread thread: threadsHandler) {
-            thread.start();
+        //передаем защелки в методы бэксистем
+        CountDownLatch countDownLatch = new CountDownLatch(threadsClient.size());;
+        backSystem.setCountDownLatch(countDownLatch);
+
+        List<Thread> threadsHandler = new ArrayList<>();
+        for (int i = 0; i < numberHandlers; i++) {
+            threadsHandler.add(new Thread(new Handler(frontSystem, backSystem)));
         }
 
-        while (true) {
-            if (threadsClient.size() == backSystem.getCounter()) {
-                for (Thread thread : threadsHandler) {
-                    thread.interrupt();
-                }
-                break;
-            }
+        //создаем пул с именованнми потоками для обработчиков
+        ExecutorService secondExecutorService = Executors.newFixedThreadPool(numberHandlers,
+                new NamingThreadsInPool("Обработчик заявок"));
+        for (Thread thread : threadsHandler) {
+            secondExecutorService.submit(thread);
         }
+        secondExecutorService.shutdown();
+
+        //ждем в основном потоке пока все защелки откроются
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().isInterrupted();
+        }
+
+        secondExecutorService.shutdownNow();
 
     }
 }
