@@ -12,5 +12,6 @@ public class ExternalSystem implements Callable<Integer> {
         int amount = 1000 * (random.nextInt(10) + 1);
         System.err.println("Получена сумма из: " + Thread.currentThread().getName() + " - " + amount);
         return amount;
+
     }
 }
